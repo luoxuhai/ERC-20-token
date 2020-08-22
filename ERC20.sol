@@ -79,21 +79,22 @@ library SafeMath {
 }
 
 contract Token is IERC20 {
+    using SafeMath for uint256;
+
     string public name;
     string public symbol;
-    uint8 public decimals = 18; // decimals 可以有的小数点个数，最小的代币单位。18 是建议的默认值
+    uint8 public decimals = 18; // 18是建议值
     uint256 public totalSupply;
     address public owner;
 
     mapping(address => uint256) public balanceOf;
-    mapping(address => uint256) public freezeOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
     constructor(
         uint256 initialSupply,
         string memory tokenName,
         string memory tokenSymbol
-    ) public {
+    ) {
         totalSupply = initialSupply * 10**uint256(decimals);
         balanceOf[msg.sender] = totalSupply;
         name = tokenName;
@@ -109,8 +110,8 @@ contract Token is IERC20 {
         require(value <= balanceOf[msg.sender]);
         require(to != address(0));
 
-        balanceOf[msg.sender] = SafeMath.safeSub(balanceOf[msg.sender], value);
-        balanceOf[to] = SafeMath.safeAdd(balanceOf[to], value);
+        balanceOf[msg.sender] = balanceOf[msg.sender].safeSub(value);
+        balanceOf[to] = balanceOf[to].safeAdd(value);
         emit Transfer(msg.sender, to, value);
         return true;
     }
@@ -124,10 +125,9 @@ contract Token is IERC20 {
         require(value <= allowance[from][msg.sender]);
         require(to != address(0));
 
-        balanceOf[from] = SafeMath.safeSub(balanceOf[from], value);
-        balanceOf[to] = SafeMath.safeAdd(balanceOf[to], value);
-        allowance[from][msg.sender] = SafeMath.safeSub(
-            allowance[from][msg.sender],
+        balanceOf[from] = balanceOf[from].safeSub(value);
+        balanceOf[to] = balanceOf[to].safeAdd(value);
+        allowance[from][msg.sender] = allowance[from][msg.sender].safeSub(
             value
         );
         emit Transfer(from, to, value);
